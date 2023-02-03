@@ -147,13 +147,13 @@ contract OMEA is Ownable, ReentrancyGuard {
 
         Investor memory _investor = investors[_msgSender()];
         if (_investor.referrer == address(0x0) && _referrer != address(0x0)) {
-            _investor.referrer = _referrer;
+            investors[_msgSender()].referrer = _referrer;
+        }
 
+        if (_referrer != address(0x0)) {
             Investor memory referrer_ = investors[_referrer];
             uint256 _totalReferrals = referrer_.referrals + 1;
-
             referrer_.referrals = _totalReferrals;
-
             uint256 _referrerAmount = _calculateReferralRewards(
                 _amount,
                 _totalReferrals
