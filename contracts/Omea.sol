@@ -205,7 +205,7 @@ contract OMEA is Ownable, ReentrancyGuard {
         Deposit memory _deposit = _depositsHistory[_msgSender()][_depositIndex];
 
         if (!_deposit.status) revert Deposit404();
-        if (_deposit.lockPeriod < block.timestamp) revert DepositIsLocked();
+        if (_deposit.lockPeriod > block.timestamp) revert DepositIsLocked();
         if (_deposit.depositor != _msgSender()) revert OwnerError();
 
         Investor memory investor_ = investors[_msgSender()];
