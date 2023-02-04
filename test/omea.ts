@@ -21,6 +21,7 @@ describe("OMEA", function () {
   let stakeholder3: SignerWithAddress;
 
   const DISTRIBUTIONS = toWei("1000");
+  const TOKENS_1000 = toWei("100");
 
   const DEV_FEE = 200; // 200 : 2 %. 10000 : 100 %
   const MARKETING_FEE = 200; // 200 : 2 %. 10000 : 100 %
@@ -82,11 +83,10 @@ describe("OMEA", function () {
   });
 
   describe("Deposit", function () {
-    const INITIAL_DEPOSIT = toWei("100");
     beforeEach(async function () {
       await omea
         .connect(stakeholder1)
-        .deposit(INITIAL_DEPOSIT, stakeholder1.address);
+        .deposit(TOKENS_1000, stakeholder1.address);
     });
 
     it("should update deposits", async () => {
@@ -102,18 +102,18 @@ describe("OMEA", function () {
     it("should update total Depoists", async () => {
       const { totalValueLocked } = await omea.getInvestmentInfo();
 
-      expect(totalValueLocked).to.eq(INITIAL_DEPOSIT);
+      expect(totalValueLocked).to.eq(TOKENS_1000);
     });
 
     it("should update total invested amount of investor", async () => {
-      const { finalDeposit } = get_dev_marketing_and_deposit(INITIAL_DEPOSIT);
+      const { finalDeposit } = get_dev_marketing_and_deposit(TOKENS_1000);
 
       const investorInfo = await omea.investors(stakeholder1.address);
       expect(investorInfo.totalInvested).to.eq(finalDeposit);
     });
 
     it("should update claimable rewards on next deposit", async () => {
-      const { finalDeposit } = get_dev_marketing_and_deposit(INITIAL_DEPOSIT);
+      const { finalDeposit } = get_dev_marketing_and_deposit(TOKENS_1000);
 
       const HPR = await omea.getHPR(finalDeposit);
       const rewards = (finalDeposit * HPR * (3600 / 3600)) / 10000;
@@ -129,10 +129,10 @@ describe("OMEA", function () {
       expect(investorInfo.claimableAmount).to.eq(rewards.toString());
     });
 
-    it.only("should add referrer to list", async () => {
+    it("should add referrer to list", async () => {
       await omea
         .connect(stakeholder1)
-        .deposit(INITIAL_DEPOSIT, stakeholder2.address);
+        .deposit(TOKENS_1000, stakeholder2.address);
 
       const referrer = await omea.investors(stakeholder2.address);
       const investorInfo = await omea.investors(stakeholder1.address);
@@ -143,11 +143,10 @@ describe("OMEA", function () {
   });
 
   describe("Bonus", () => {
-    const INITIAL_DEPOSIT = toWei("100");
     beforeEach(async function () {
       await omea
         .connect(stakeholder1)
-        .deposit(INITIAL_DEPOSIT, stakeholder1.address);
+        .deposit(TOKENS_1000, stakeholder1.address);
 
       const nextBlockStamp = (await getBlockTimestamp()) + 3600;
       await time.increaseTo(nextBlockStamp);
@@ -160,7 +159,7 @@ describe("OMEA", function () {
     });
 
     it("should calculate claimable rewards for initial deposit", async () => {
-      const { finalDeposit } = get_dev_marketing_and_deposit(INITIAL_DEPOSIT);
+      const { finalDeposit } = get_dev_marketing_and_deposit(TOKENS_1000);
 
       const nextBlockStamp = (await getBlockTimestamp()) + 3600;
       await time.increaseTo(nextBlockStamp);
@@ -168,7 +167,7 @@ describe("OMEA", function () {
       const HPR = await omea.getHPR(finalDeposit);
 
       const firstHour = finalDeposit.mul(HPR).div(10000);
-      const secondHour = INITIAL_DEPOSIT.mul(HPR).div(10000);
+      const secondHour = TOKENS_1000.mul(HPR).div(10000);
       const total = firstHour.add(secondHour);
 
       const claimables = await omea.getClaimableAmount(stakeholder1.address);
@@ -182,12 +181,19 @@ describe("OMEA", function () {
     });
   });
 
-  describe.only("getClaimable info after rewards claim", () => {
-    const INITIAL_DEPOSIT = toWei("100");
+  describe("capital withdraw", () => {
+    before(async () => {
+      await omea
+        .connect(stakeholder1)
+        .deposit(TOKENS_1000, stakeholder1.address);
+    });
+  });
+
+  describe("Get Claimable info after rewards claim", () => {
     beforeEach(async function () {
       await omea
         .connect(stakeholder1)
-        .deposit(INITIAL_DEPOSIT, stakeholder1.address);
+        .deposit(TOKENS_1000, stakeholder1.address);
     });
 
     it("should give correct values on getClaimable amount", async () => {
@@ -217,7 +223,7 @@ describe("OMEA", function () {
       expect(await omea.getHPR(ZERO_DEPOSIT)).to.eq(0);
     });
     it("should return correct HPR_1 for deposit", async () => {
-      expect(await omea.getHPR(HPR_1_UPPER_LIMIT)).to.eq(6);
+      expect(await omea.getHPR(HPR_1_UPPER_LIMIT)).to.eq(7);
     });
 
     it("should return correct HPR_2 for deposit", async () => {
