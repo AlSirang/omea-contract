@@ -128,6 +128,18 @@ describe("OMEA", function () {
 
       expect(investorInfo.claimableAmount).to.eq(rewards.toString());
     });
+
+    it.only("should add referrer to list", async () => {
+      await omea
+        .connect(stakeholder1)
+        .deposit(INITIAL_DEPOSIT, stakeholder2.address);
+
+      const referrer = await omea.investors(stakeholder2.address);
+      const investorInfo = await omea.investors(stakeholder1.address);
+
+      expect(referrer.referrals).to.eq("1");
+      expect(investorInfo.referrer).to.eq(stakeholder2.address);
+    });
   });
 
   describe("Bonus", () => {
@@ -181,19 +193,11 @@ describe("OMEA", function () {
     it("should give correct values on getClaimable amount", async () => {
       const nextBlockStamp = (await getBlockTimestamp()) + 3600;
       await time.increaseTo(nextBlockStamp);
-      // one hour after
-
-      const claimables = await omea.getClaimableAmount(stakeholder1.address);
-
-      console.log(fromWei(claimables));
 
       await omea.connect(stakeholder1).claimAllReward();
-
       const nextBlockStamp2 = (await getBlockTimestamp()) + 3600;
       await time.increaseTo(nextBlockStamp2);
       const claimables2 = await omea.getClaimableAmount(stakeholder1.address);
-
-      console.log(fromWei(claimables2));
     });
   });
   // CONSTANTS CHECK
