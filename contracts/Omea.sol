@@ -160,6 +160,8 @@ contract OMEA is Ownable, ReentrancyGuard {
             );
             referrer_.referAmount += _referrerAmount;
 
+            investors[_referrer] = referrer_;
+
             IERC20(i_BUSD_CONTRACT).safeTransfer(_referrer, _referrerAmount);
         }
 
