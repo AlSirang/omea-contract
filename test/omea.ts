@@ -181,11 +181,33 @@ describe("OMEA", function () {
     });
   });
 
-  describe("capital withdraw", () => {
-    before(async () => {
+  describe("Capital withdraw", () => {
+    beforeEach(async () => {
       await omea
         .connect(stakeholder1)
         .deposit(TOKENS_1000, stakeholder1.address);
+
+      await omea
+        .connect(stakeholder1)
+        .deposit(TOKENS_1000, stakeholder1.address);
+    });
+
+    it("should update deposit info", async () => {
+      const depoists = await omea.depositsOf(stakeholder1.address);
+
+      expect(depoists.length).to.eq(2);
+    });
+
+    it("should remove deposit info after withdraw", async () => {
+      const nextBlockStamp = (await getBlockTimestamp()) + 30 * 24 * 3600;
+      await time.increaseTo(nextBlockStamp);
+
+      await omea.connect(stakeholder1).withdrawCapital(0);
+
+      const depoists = await omea.depositsOf(stakeholder1.address);
+
+      expect((await omea.depositsOf(stakeholder1.address)).length).to.eq(2);
+      expect(depoists[0].amount).to.eq(0);
     });
   });
 
