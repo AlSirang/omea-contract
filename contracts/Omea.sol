@@ -229,8 +229,7 @@ contract OMEA is Ownable, ReentrancyGuard {
         }
 
         investors[_msgSender()] = investor_;
-        _deposit.status = false;
-        _depositsHistory[_msgSender()][_depositIndex] = _deposit;
+        delete _depositsHistory[_msgSender()][_depositIndex];
 
         uint256 _principalFee = (depositCapital * PRINCIPAL_FEE) / 10000;
         depositCapital -= _principalFee;
